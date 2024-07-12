@@ -8,66 +8,7 @@ function App() {
         icon: '/icon.png'
     });
     const [subscribed, setSubscribed] = useState(false);
-    useEffect(() => {
-        if(subscribed)
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(registration => {
-                    console.log('Service Worker registered:', registration);
-
-                    Notification.requestPermission().then(permission => {
-                        console.log('Notification permission:', permission)
-                        if (permission === 'granted') {
-                            registration.pushManager.subscribe({
-                                userVisibleOnly: true,
-                                applicationServerKey: urlBase64ToUint8Array('BN8qkCUgRcHzXucfH0iSbSSZgeqLxlTfqEBoluOZEUqpqK2LV14SNciJCqkY7P963rFRakkKoMF9eEzgsVDVJ6Y')
-                            }).then(subscription => {
-                                fetch(`${process.env.REACT_APP_URL}/subscribe`, {
-                                    method: 'POST',
-                                    body: JSON.stringify({ subscription, kiosk_id: kioskId }),
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    }
-                                });
-                            });
-                        }
-                        else
-                            console.error('Notification permission denied');
-                    });
-                }).catch(error => console.error('Service Worker registration failed:', error));
-        }
-    }, [subscribed]);
-
-    //     useEffect(() => {
-    //     if (subscribed) {
-    //         if ('serviceWorker' in navigator) {
-    //             navigator.serviceWorker.ready.then(registration => {
-    //                 registration.pushManager.getSubscription().then(subscription => {
-    //                     if (!subscription) {
-    //                         registration.pushManager.subscribe({
-    //                             userVisibleOnly: true,
-    //                             applicationServerKey: urlBase64ToUint8Array('Your VAPID Public Key')
-    //                         }).then(subscription => {
-    //                             console.log('Subscribed:', subscription);
-    //                             fetch('http://localhost:5000/subscribe', {
-    //                                 method: 'POST',
-    //                                 body: JSON.stringify({ subscription, kiosk_id: kioskId }),
-    //                                 headers: {
-    //                                     'Content-Type': 'application/json'
-    //                                 }
-    //                             }).then(response => response.json())
-    //                               .then(data => console.log('Subscription response:', data))
-    //                               .catch(error => console.error('Subscription error:', error));
-    //                         }).catch(error => console.error('Subscription failed:', error));
-    //                     } else {
-    //                         console.log('Already subscribed:', subscription);
-    //                     }
-    //                 }).catch(error => console.error('Error getting subscription:', error));
-    //             });
-    //         }
-    //     }
-    // }, [subscribed]);
-    const urlBase64ToUint8Array = (base64String) => {
+        const urlBase64ToUint8Array = (base64String) => {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
         const base64 = (base64String + padding)
             .replace(/-/g, '+')
@@ -81,6 +22,36 @@ function App() {
         }
         return outputArray;
     };
+ useEffect(() => {
+        if (subscribed) {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(registration => {
+                    console.log('Service Worker ready:', registration);
+
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            registration.pushManager.subscribe({
+                                userVisibleOnly: true,
+                                applicationServerKey: urlBase64ToUint8Array('BN8qkCUgRcHzXucfH0iSbSSZgeqLxlTfqEBoluOZEUqpqK2LV14SNciJCqkY7P963rFRakkKoMF9eEzgsVDVJ6Y')
+                            }).then(subscription => {
+                                fetch(`${process.env.REACT_APP_URL}/subscribe`, {
+                                    method: 'POST',
+                                    body: JSON.stringify({ subscription, kiosk_id: kioskId }),
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    }
+                                }).then(response => response.json())
+                                  .then(data => console.log('Subscription response:', data))
+                                  .catch(error => console.error('Subscription error:', error));
+                            }).catch(error => console.error('Subscription failed:', error));
+                        } else {
+                            console.error('Notification permission denied');
+                        }
+                    });
+                }).catch(error => console.error('Service Worker registration failed:', error));
+            }
+        }
+    }, [subscribed]);
 
     const sendNotification = () => {
         fetch(`${process.env.REACT_APP_URL}/notify`, {
@@ -90,9 +61,10 @@ function App() {
                 'Content-Type': 'application/json'
             }
         }).then(response => response.json())
-        .then(data => console.log('Notification response:', data))
-        .catch(error => console.error('Error sending notification:', error));
+          .then(data => console.log('Notification response:', data))
+          .catch(error => console.error('Error sending notification:', error));
     };
+
     const handleKioskIdSubmit = (event) => {
         event.preventDefault();
         setSubscribed(true);
