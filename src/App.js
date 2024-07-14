@@ -32,7 +32,7 @@ function App() {
                         if (permission === 'granted') {
                             registration.pushManager.subscribe({
                                 userVisibleOnly: true,
-                                applicationServerKey: urlBase64ToUint8Array('BF_4AzHI2FoLvaH2mUSISV_3KeB2-hqd9uHX6FeyMYYBBq_A0XQYMtYMj6MaN2Flm67I5KVhmvuFYFixv7iSRZs')
+                                applicationServerKey: urlBase64ToUint8Array('BN8qkCUgRcHzXucfH0iSbSSZgeqLxlTfqEBoluOZEUqpqK2LV14SNciJCqkY7P963rFRakkKoMF9eEzgsVDVJ6Y')
                             }).then(subscription => {
                                 fetch(`${process.env.REACT_APP_URL}/subscribe`, {
                                     method: 'POST',
